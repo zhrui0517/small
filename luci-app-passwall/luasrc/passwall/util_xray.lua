@@ -48,7 +48,7 @@ end
 
 function gen_outbound(flag, node, tag, proxy_table)
 	local result = nil
-	if node and node ~= "nil" then
+	if node then
 		local node_id = node[".name"]
 		if tag == nil then
 			tag = node_id
@@ -82,7 +82,7 @@ function gen_outbound(flag, node, tag, proxy_table)
 						"127.0.0.1", --bind
 						new_port, --socks port
 						config_file, --config file
-						(proxy_tag and proxy_tag ~= "nil" and relay_port) and tostring(relay_port) or "" --relay port
+						(proxy_tag and relay_port) and tostring(relay_port) or "" --relay port
 					)
 				))
 				node = {}
@@ -95,7 +95,7 @@ function gen_outbound(flag, node, tag, proxy_table)
 		else
 			if node.flow == "xtls-rprx-vision" then
 			else
-				if proxy_tag and proxy_tag ~= "nil" then
+				if proxy_tag then
 					node.proxySettings = {
 						tag = proxy_tag,
 						transportLayer = true
@@ -404,7 +404,7 @@ function gen_config_server(node)
 		}
 	}
 
-	if node.outbound_node and node.outbound_node ~= "nil" then
+	if node.outbound_node then
 		local outbound = nil
 		if node.outbound_node == "_iface" and node.outbound_node_iface then
 			outbound = {
@@ -580,7 +580,7 @@ function gen_config(var)
 	local remote_dns_doh_ip = var["-remote_dns_doh_ip"]
 	local remote_dns_doh_port = var["-remote_dns_doh_port"]
 	local dns_cache = var["-dns_cache"]
-	local dns_client_ip = var["-dns_client_ip"]
+	local remote_dns_client_ip = var["-remote_dns_client_ip"]
 	local dns_socks_address = var["-dns_socks_address"]
 	local dns_socks_port = var["-dns_socks_port"]
 	local loglevel = var["-loglevel"] or "warning"
@@ -735,7 +735,7 @@ function gen_config(var)
 			-- fallback node
 			local fallback_node_tag = nil
 			local fallback_node_id = _node.fallback_node
-			if fallback_node_id == "" or fallback_node_id == "nil" then fallback_node_id = nil end
+			if not fallback_node_id or fallback_node_id == "" then fallback_node_id = nil end
 			if fallback_node_id then
 				local is_new_node = true
 				for _, outbound in ipairs(outbounds) do
@@ -784,7 +784,7 @@ function gen_config(var)
 			local last_insert_outbound
 
 			if node.chain_proxy == "1" and node.preproxy_node then
-				if outbound["_flag_proxy_tag"] and outbound["_flag_proxy_tag"] ~= "nil" then
+				if outbound["_flag_proxy_tag"] then
 					--Ignore
 				else
 					local preproxy_node = uci:get_all(appname, node.preproxy_node)
@@ -846,7 +846,7 @@ function gen_config(var)
 					return "blackhole", nil
 				elseif _node_id == "_default" then
 					return "default", nil
-				elseif _node_id:find("Socks_") then
+				elseif _node_id and _node_id:find("Socks_") then
 					local socks_id = _node_id:sub(1 + #"Socks_")
 					local socks_node = uci:get_all(appname, socks_id) or nil
 					local socks_tag
@@ -1141,7 +1141,7 @@ function gen_config(var)
 			disableFallback = true,
 			disableFallbackIfMatch = true,
 			servers = {},
-			clientIp = (dns_client_ip and dns_client_ip ~= "") and dns_client_ip or nil,
+			clientIp = (remote_dns_client_ip and remote_dns_client_ip ~= "") and remote_dns_client_ip or nil,
 			queryStrategy = (dns_query_strategy and dns_query_strategy ~= "") and dns_query_strategy or "UseIPv4"
 		}
 
@@ -1396,7 +1396,7 @@ function gen_config(var)
 		end
 
 		for index, value in ipairs(config.outbounds) do
-			if (not value["_flag_proxy_tag"] or value["_flag_proxy_tag"] == "nil") and value["_id"] and value.server and value.server_port then
+			if not value["_flag_proxy_tag"] and value["_id"] and value.server and value.server_port then
 				sys.call(string.format("echo '%s' >> %s", value["_id"], api.TMP_PATH .. "/direct_node_list"))
 			end
 			for k, v in pairs(config.outbounds[index]) do
