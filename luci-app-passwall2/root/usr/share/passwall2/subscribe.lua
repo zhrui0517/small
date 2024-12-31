@@ -19,7 +19,7 @@ local ssub, slen, schar, sbyte, sformat, sgsub = string.sub, string.len, string.
 local split = api.split
 local jsonParse, jsonStringify = luci.jsonc.parse, luci.jsonc.stringify
 local base64Decode = api.base64Decode
-local uci = luci.model.uci.cursor()
+local uci = api.libuci
 uci:revert(appname)
 
 local has_ss = api.is_finded("ss-redir")
@@ -213,7 +213,7 @@ do
 				set = function(o)
 					for kk, vv in pairs(CONFIG) do
 						if (vv.remarks == id .. "备用节点的列表") then
-							uci:set_list(appname, id, "autoswitch_backup_node", vv.new_nodes)
+							api.uci_set_list(uci, appname, id, "autoswitch_backup_node", vv.new_nodes)
 						end
 					end
 				end
@@ -285,8 +285,8 @@ do
 						if (vv.remarks == "Xray负载均衡节点[" .. node_id .. "]列表") then
 							uci:foreach(appname, "nodes", function(node2)
 								if node2[".name"] == node[".name"] then
-									local section = uci:section(appname, "nodes", node_id)
-									uci:set_list(appname, section, "balancing_node", vv.new_nodes)
+									local section = api.uci_section(uci, appname, "nodes", node_id)
+									api.uci_set_list(uci, appname, section, "balancing_node", vv.new_nodes)
 								end
 							end)
 						end
@@ -584,7 +584,7 @@ local function processData(szType, content, add_mode, add_from)
 			info = info:sub(1, find_index - 1)
 		end
 
-		local hostInfo = split(base64Decode(info), "@")
+		local hostInfo = split(base64Decode(UrlDecode(info)), "@")
 		if hostInfo and #hostInfo > 0 then
 			local host_port = hostInfo[#hostInfo]
 			-- [2001:4860:4860::8888]:443
@@ -630,12 +630,9 @@ local function processData(szType, content, add_mode, add_from)
 				result.protocol = 'shadowsocks'
 			end
 
-			if result.type == "SS-Rust" and method:lower() == "chacha20-poly1305" then
-				result.method = "chacha20-ietf-poly1305"
-			end
-
-			if result.type == "Xray" and method:lower() == "chacha20-ietf-poly1305" then
-				result.method = "chacha20-poly1305"
+			if result.type ~= "Xray" then
+				result.method = (method:lower() == "chacha20-poly1305" and "chacha20-ietf-poly1305") or
+						(method:lower() == "xchacha20-poly1305" and "xchacha20-ietf-poly1305") or method
 			end
 
 			if result.plugin then
@@ -1427,7 +1424,7 @@ local function update_node(manual)
 		local remark = v["remark"]
 		local list = v["list"]
 		for _, vv in ipairs(list) do
-			local cfgid = uci:section(appname, "nodes", api.gen_short_uuid())
+			local cfgid = api.uci_section(uci, appname, "nodes", api.gen_short_uuid())
 			for kkk, vvv in pairs(vv) do
 				uci:set(appname, cfgid, kkk, vvv)
 				-- sing-box 域名解析策略
