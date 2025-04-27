@@ -28,6 +28,7 @@ const callNikkiVersion = rpc.declare({
 const callNikkiProfile = rpc.declare({
     object: 'luci.nikki',
     method: 'profile',
+    params: [ 'defaults' ],
     expect: { '': {} }
 });
 
@@ -62,6 +63,7 @@ const proxyProvidersDir = `${providersDir}/proxy`;
 const logDir = `/var/log/nikki`;
 const appLogPath = `${logDir}/app.log`;
 const coreLogPath = `${logDir}/core.log`;
+const debugLogPath = `${logDir}/debug.log`;
 const nftDir = `${homeDir}/nftables`;
 const reservedIPNFT = `${nftDir}/reserved_ip.nft`;
 const reservedIP6NFT = `${nftDir}/reserved_ip6.nft`;
@@ -76,6 +78,7 @@ return baseclass.extend({
     runDir: runDir,
     appLogPath: appLogPath,
     coreLogPath: coreLogPath,
+    debugLogPath: debugLogPath,
     runProfilePath: runProfilePath,
     reservedIPNFT: reservedIPNFT,
     reservedIP6NFT: reservedIP6NFT,
@@ -96,8 +99,8 @@ return baseclass.extend({
         return callNikkiVersion();
     },
 
-    profile: function () {
-        return callNikkiProfile();
+    profile: function (defaults) {
+        return callNikkiProfile(defaults);
     },
 
     updateSubscription: function (section_id) {
@@ -105,7 +108,7 @@ return baseclass.extend({
     },
 
     api: async function (method, path, query, body) {
-        const profile = await callNikkiProfile();
+        const profile = await callNikkiProfile({ 'external-controller': null, 'secret': null });
         const apiListen = profile['external-controller'];
         const apiSecret = profile['secret'] ?? '';
         const apiPort = apiListen.substring(apiListen.lastIndexOf(':') + 1);
@@ -119,7 +122,7 @@ return baseclass.extend({
     },
 
     openDashboard: async function () {
-        const profile = await callNikkiProfile();
+        const profile = await callNikkiProfile({ 'external-ui-name': null, 'external-controller': null, 'secret': null });
         const uiName = profile['external-ui-name'];
         const apiListen = profile['external-controller'];
         const apiSecret = profile['secret'] ?? '';
