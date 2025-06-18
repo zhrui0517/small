@@ -259,6 +259,34 @@ return view.extend({
 		o.depends('type', 'vmess');
 		o.modalonly = true;
 
+		/* Plugin fields */
+		o = s.taboption('field_general', form.ListValue, 'plugin', _('Plugin'));
+		o.value('', _('none'));
+		o.value('shadow-tls', _('shadow-tls'));
+		o.depends('type', 'shadowsocks');
+		o.modalonly = true;
+
+		o = s.taboption('field_general', form.Value, 'plugin_opts_handshake_dest', _('Plugin: ') + _('Handshake target that supports TLS 1.3'));
+		o.datatype = 'hostport';
+		o.placeholder = 'cloud.tencent.com:443';
+		o.rmempty = false;
+		o.depends({plugin: 'shadow-tls'});
+		o.modalonly = true;
+
+		o = s.taboption('field_general', hm.GenValue, 'plugin_opts_thetlspassword', _('Plugin: ') + _('Password'));
+		o.password = true;
+		o.rmempty = false;
+		o.depends({plugin: 'shadow-tls'});
+		o.modalonly = true;
+
+		o = s.taboption('field_general', form.ListValue, 'plugin_opts_shadowtls_version', _('Plugin: ') + _('Version'));
+		o.value('1', _('v1'));
+		o.value('2', _('v2'));
+		o.value('3', _('v3'));
+		o.default = '3';
+		o.depends({plugin: 'shadow-tls'});
+		o.modalonly = true;
+
 		/* Extra fields */
 		o = s.taboption('field_general', form.Flag, 'udp', _('UDP'));
 		o.default = o.disabled;
@@ -332,6 +360,51 @@ return view.extend({
 		o.onclick = L.bind(hm.uploadCertificate, o, _('private key'), 'server_privatekey');
 		o.modalonly = true;
 
+		o = s.taboption('field_tls', hm.GenText, 'tls_ech_key', _('ECH key'));
+		o.placeholder = '-----BEGIN ECH KEYS-----\nACATwY30o/RKgD6hgeQxwrSiApLaCgU+HKh7B6SUrAHaDwBD/g0APwAAIAAgHjzK\nmadSJjYQIf9o1N5GXjkW4DEEeb17qMxHdwMdNnwADAABAAEAAQACAAEAAwAIdGVz\ndC5jb20AAA==\n-----END ECH KEYS-----';
+		o.hm_placeholder = 'outer-sni.any.domain';
+		o.cols = 30
+		o.rows = 2;
+		o.hm_options = {
+			type: 'ech-keypair',
+			params: '',
+			result: {
+				ech_key: o.option,
+				ech_cfg: 'tls_ech_config'
+			}
+		}
+		o.renderWidget = function(section_id, option_index, cfgvalue) {
+			let node = hm.TextValue.prototype.renderWidget.apply(this, arguments);
+			const cbid = this.cbid(section_id) + '._outer_sni';
+
+			node.appendChild(E('div',  { 'class': 'control-group' }, [
+				E('input', {
+					id: cbid,
+					class: 'cbi-input-text',
+					style: 'width: 10em',
+					placeholder: this.hm_placeholder
+				}),
+				E('button', {
+					class: 'cbi-button cbi-button-add',
+					click: ui.createHandlerFn(this, function() {
+						this.hm_options.params = document.getElementById(cbid).value;
+
+						return hm.handleGenKey.call(this, this.hm_options);
+					})
+				}, [ _('Generate') ])
+			]));
+
+			return node;
+		}
+		o.depends({tls: '1', type: /^(http|socks|mixed|vmess|vless|trojan|anytls|hysteria2|tuic)$/});
+		o.modalonly = true;
+
+		o = s.taboption('field_tls', form.Value, 'tls_ech_config', _('ECH config'),
+			_('This ECH parameter needs to be added to the HTTPS record of the domain.'));
+		o.placeholder = 'AEn+DQBFKwAgACABWIHUGj4u+PIggYXcR5JF0gYk3dCRioBW8uJq9H4mKAAIAAEAAQABAANAEnB1YmxpYy50bHMtZWNoLmRldgAA';
+		o.depends({tls: '1', type: /^(http|socks|mixed|vmess|vless|trojan|anytls|hysteria2|tuic)$/});
+		o.modalonly = true;
+
 		// uTLS fields
 		o = s.taboption('field_tls', form.Flag, 'tls_reality', _('REALITY'));
 		o.default = o.disabled;
@@ -347,7 +420,7 @@ return view.extend({
 
 		o = s.taboption('field_tls', hm.GenValue, 'tls_reality_private_key', _('REALITY private key'));
 		const tls_reality_public_key = 'tls_reality_public_key';
-		o.hm_asymmetric = {
+		o.hm_options = {
 			type: 'reality-keypair',
 			result: {
 				private_key: o.option,

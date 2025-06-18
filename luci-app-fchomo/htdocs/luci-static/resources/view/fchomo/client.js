@@ -95,7 +95,7 @@ class DNSAddress {
 
 	toString() {
 		return this.addr + (this.params.size === 0 ? '' : '#' +
-			['detour', 'h3', 'ecs', 'ecs-override'].map((k) => {
+			['detour', 'h3', 'skip-cert-verify', 'ecs', 'ecs-override', 'disable-ipv4', 'disable-ipv6'].map((k) => {
 				return this.params.has(k) ? '%s=%s'.format(k, encodeURI(this.params.get(k))) : null;
 			}).filter(v => v).join('&')
 		);
@@ -968,24 +968,6 @@ return view.extend({
 		so.default = so.disabled;
 		so.modalonly = true;
 
-		// Deprecated
-		so = ss.taboption('field_override', widgets.DeviceSelect, 'interface_name', _('Bind interface'),
-			_('Bind outbound interface.</br>') +
-			_('Priority: Proxy Node > Global.') + '</br>' +
-			_('Option is deprecated, please use the same option in proxy node.'));
-		so.multiple = false;
-		so.noaliases = true;
-		so.readonly = true;
-		so.modalonly = true;
-
-		// Deprecated
-		so = ss.taboption('field_override', form.Value, 'routing_mark', _('Routing mark'),
-			_('Priority: Proxy Node > Global.') + '</br>' +
-			_('Option is deprecated, please use the same option in proxy node.'));
-		so.datatype = 'uinteger';
-		so.readonly = true;
-		so.modalonly = true;
-
 		/* Health fields */
 		/* Url-test/Fallback/Load-balance */
 		so = ss.taboption('field_health', form.Value, 'url', _('Health check URL'));
@@ -1265,14 +1247,14 @@ return view.extend({
 		so = ss.option(form.Flag, 'ipv6', _('IPv6 support'));
 		so.default = so.enabled;
 
-		so = ss.option(form.MultiValue, 'boot_server', _('Boot DNS server'),
+		so = ss.option(form.MultiValue, 'boot_server', _('Bootstrap DNS server'),
 			_('Used to resolve the domain of the DNS server. Must be IP.'));
 		so.default = 'default-dns';
 		so.load = L.bind(loadDNSServerLabel, so);
 		so.validate = L.bind(validateNameserver, so);
 		so.rmempty = false;
 
-		so = ss.option(form.MultiValue, 'bootnode_server', _('Boot DNS server (Node)'),
+		so = ss.option(form.MultiValue, 'bootnode_server', _('Bootstrap DNS server (Node)'),
 			_('Used to resolve the domain of the Proxy node.'));
 		so.default = 'default-dns';
 		so.load = L.bind(loadDNSServerLabel, so);
@@ -1376,17 +1358,15 @@ return view.extend({
 			// https://github.com/muink/mihomo/blob/43f21c0b412b7a8701fe7a2ea6510c5b985a53d6/config/config.go#L1211C8-L1211C14
 			if (value.match(/^https?:\/\//)){
 				this.section.getUIElement(section_id, 'h3').node.querySelector('input').disabled = null;
-				this.section.getUIElement(section_id, 'ecs').node.querySelector('input').disabled = null;
-				this.section.getUIElement(section_id, 'ecs-override').node.querySelector('input').disabled = null;
 			} else {
 				let UIEl = this.section.getUIElement(section_id, 'address');
 
-				let newvalue = new DNSAddress(UIEl.getValue()).setParam('h3').setParam('ecs').setParam('ecs-override').toString();
+				let newvalue = new DNSAddress(UIEl.getValue()).setParam('h3').toString();
 
 				UIEl.node.previousSibling.innerText = newvalue;
 				UIEl.setValue(newvalue);
 
-				['h3', 'ecs', 'ecs-override'].forEach((opt) => {
+				['h3'].forEach((opt) => {
 					let UIEl = this.section.getUIElement(section_id, opt);
 					UIEl.setValue('');
 					UIEl.node.querySelector('input').disabled = 'true';
@@ -1440,6 +1420,25 @@ return view.extend({
 		so.write = function() {};
 		so.modalonly = true;
 
+		so = ss.option(form.Flag, 'skip-cert-verify', _('Skip cert verify'),
+			_('Donot verifying server certificate.') +
+			'<br/>' +
+			_('This is <strong>DANGEROUS</strong>, your traffic is almost like <strong>PLAIN TEXT</strong>! Use at your own risk!'));
+		so.default = so.disabled;
+		so.load = function(section_id) {
+			return boolToFlag(new DNSAddress(uci.get(data[0], section_id, 'address')).parseParam('skip-cert-verify') ? true : false);
+		}
+		so.onchange = function(ev, section_id, value) {
+			let UIEl = this.section.getUIElement(section_id, 'address');
+
+			let newvalue = new DNSAddress(UIEl.getValue()).setParam('skip-cert-verify', flagToBool(value) || null).toString();
+
+			UIEl.node.previousSibling.innerText = newvalue;
+			UIEl.setValue(newvalue);
+		}
+		so.write = function() {};
+		so.modalonly = true;
+
 		so = ss.option(form.Value, 'ecs', _('EDNS Client Subnet'));
 		so.datatype = 'cidr';
 		so.load = function(section_id) {
@@ -1472,6 +1471,38 @@ return view.extend({
 		}
 		so.write = function() {};
 		so.depends({'ecs': /.+/});
+		so.modalonly = true;
+
+		so = ss.option(form.Flag, 'disable-ipv4', _('Discard A responses'));
+		so.default = so.disabled;
+		so.load = function(section_id) {
+			return boolToFlag(new DNSAddress(uci.get(data[0], section_id, 'address')).parseParam('disable-ipv4') ? true : false);
+		}
+		so.onchange = function(ev, section_id, value) {
+			let UIEl = this.section.getUIElement(section_id, 'address');
+
+			let newvalue = new DNSAddress(UIEl.getValue()).setParam('disable-ipv4', flagToBool(value) || null).toString();
+
+			UIEl.node.previousSibling.innerText = newvalue;
+			UIEl.setValue(newvalue);
+		}
+		so.write = function() {};
+		so.modalonly = true;
+
+		so = ss.option(form.Flag, 'disable-ipv6', _('Discard AAAA responses'));
+		so.default = so.disabled;
+		so.load = function(section_id) {
+			return boolToFlag(new DNSAddress(uci.get(data[0], section_id, 'address')).parseParam('disable-ipv6') ? true : false);
+		}
+		so.onchange = function(ev, section_id, value) {
+			let UIEl = this.section.getUIElement(section_id, 'address');
+
+			let newvalue = new DNSAddress(UIEl.getValue()).setParam('disable-ipv6', flagToBool(value) || null).toString();
+
+			UIEl.node.previousSibling.innerText = newvalue;
+			UIEl.setValue(newvalue);
+		}
+		so.write = function() {};
 		so.modalonly = true;
 		/* DNS server END */
 

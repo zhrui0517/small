@@ -121,6 +121,9 @@ msgstr "您只需要在SmartDNS配置好国内DNS分组，并设置重定向或�
 msgid "Filter Mode"
 msgstr "过滤模式"
 
+msgid "If the node uses Xray/Sing-Box shunt, select the matching filter mode (Xray/Sing-Box)."
+msgstr "当节点使用 Xray/Sing-Box 分流时，过滤模式需对应选择 Xray/Sing-Box 。"
+
 msgid "A/AAAA type"
 msgstr "A/AAAA 类型"
 
@@ -240,6 +243,12 @@ msgstr "验证 DoT SSL 证书。（在某些平台可能无法验证，谨慎开
 
 msgid "Try this feature if the rule modification does not take effect."
 msgstr "如果修改规则后没有生效，请尝试此功能。"
+
+msgid "Force HTTPS SOA"
+msgstr "停用 HTTPS 记录解析"
+
+msgid "Force queries with qtype 65 to respond with an SOA record."
+msgstr "强制使 qtype 65 查询返回 SOA。"
 
 msgid "Are you sure to hide?"
 msgstr "你确定要隐藏吗？"
@@ -528,6 +537,9 @@ msgstr "导出分享URL"
 
 msgid "Generate QRCode"
 msgstr "生成二维码"
+
+msgid "Export Config File"
+msgstr "导出配置文件"
 
 msgid "Import Finished"
 msgstr "导入完成："
@@ -1069,6 +1081,9 @@ msgstr "删除所有订阅节点"
 msgid "Delete the subscribed node"
 msgstr "删除已订阅的节点"
 
+msgid "Are you sure you want to delete all subscribed nodes?"
+msgstr "您确定要删除所有已订阅的节点吗？"
+
 msgid "Manual subscription All"
 msgstr "手动订阅全部"
 
@@ -1302,6 +1317,9 @@ msgstr "原版Trojan只支持'tls'，请选择'tls'。"
 
 msgid "Transfer mode"
 msgstr "传输模式"
+
+msgid "Do not send server name in ClientHello."
+msgstr "不要在 ClientHello 中发送服务器名称。"
 
 msgid "Domain"
 msgstr "域名"
@@ -1836,6 +1854,15 @@ msgstr "端口跳跃范围"
 
 msgid "Format as 1000:2000 or 1000-2000 Multiple groups are separated by commas (,)."
 msgstr "格式为：1000:2000 或 1000-2000 多组时用逗号(,)隔开。"
+
+msgid "Use Custom Config"
+msgstr "使用自定义配置"
+
+msgid "Custom Config"
+msgstr "自定义配置"
+
+msgid "Must be JSON text!"
+msgstr "必须是 JSON 文本内容！"
 
 msgid "Geo View"
 msgstr "Geo 查询"
