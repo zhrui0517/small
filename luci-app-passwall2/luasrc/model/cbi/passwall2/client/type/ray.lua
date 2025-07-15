@@ -18,7 +18,7 @@ local function _n(name)
 end
 
 local ss_method_list = {
-	"aes-128-gcm", "aes-256-gcm", "chacha20-poly1305", "chacha20-ietf-poly1305", "xchacha20-poly1305", "xchacha20-ietf-poly1305", "2022-blake3-aes-128-gcm", "2022-blake3-aes-256-gcm", "2022-blake3-chacha20-poly1305"
+	"none", "plain", "aes-128-gcm", "aes-256-gcm", "chacha20-poly1305", "chacha20-ietf-poly1305", "xchacha20-poly1305", "xchacha20-ietf-poly1305", "2022-blake3-aes-128-gcm", "2022-blake3-aes-256-gcm", "2022-blake3-chacha20-poly1305"
 }
 
 local security_list = { "none", "auto", "aes-128-gcm", "chacha20-poly1305", "zero" }
@@ -155,7 +155,10 @@ local pi = s:option(Value, _n("probeInterval"), translate("Probe Interval"))
 pi:depends({ [_n("balancingStrategy")] = "leastPing" })
 pi:depends({ [_n("balancingStrategy")] = "leastLoad" })
 pi.default = "1m"
-pi.description = translate("The interval between initiating probes. The time format is numbers + units, such as '10s', '2h45m', and the supported time units are <code>ns</code>, <code>us</code>, <code>ms</code>, <code>s</code>, <code>m</code>, <code>h</code>, which correspond to nanoseconds, microseconds, milliseconds, seconds, minutes, and hours, respectively.")
+pi.placeholder = "1m"
+pi.description = translate("The interval between initiating probes.") .. "<br>" ..
+		translate("The time format is numbers + units, such as '10s', '2h45m', and the supported time units are <code>s</code>, <code>m</code>, <code>h</code>, which correspond to seconds, minutes, and hours, respectively.") .. "<br>" ..
+		translate("When the unit is not filled in, it defaults to seconds.")
 
 if api.compare_versions(xray_version, ">=", "1.8.12") then
 	ucpu:depends({ [_n("protocol")] = "_balancing" })
