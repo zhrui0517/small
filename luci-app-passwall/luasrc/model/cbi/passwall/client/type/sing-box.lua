@@ -59,6 +59,7 @@ end
 if version_ge_1_12_0 then
 	o:value("anytls", "AnyTLS")
 end
+o:value("ssh", "SSH")
 o:value("_urltest", translate("URLTest"))
 o:value("_shunt", translate("Shunt"))
 o:value("_iface", translate("Custom Interface"))
@@ -75,7 +76,8 @@ for k, e in ipairs(api.get_valid_nodes()) do
 		nodes_table[#nodes_table + 1] = {
 			id = e[".name"],
 			remark = e["remark"],
-			type = e["type"]
+			type = e["type"],
+			chain_proxy = e["chain_proxy"]
 		}
 	end
 	if e.protocol == "_iface" then
@@ -105,7 +107,27 @@ end)
 --[[ URLTest ]]
 o = s:option(DynamicList, _n("urltest_node"), translate("URLTest node list"), translate("List of nodes to test, <a target='_blank' href='https://sing-box.sagernet.org/configuration/outbound/urltest'>document</a>"))
 o:depends({ [_n("protocol")] = "_urltest" })
-for k, v in pairs(nodes_table) do o:value(v.id, v.remark) end
+local valid_ids = {}
+for k, v in pairs(nodes_table) do
+	o:value(v.id, v.remark)
+	valid_ids[v.id] = true
+end
+-- 去重并禁止自定义非法输入
+function o.custom_write(self, section, value)
+	local result = {}
+	if type(value) == "table" then
+		local seen = {}
+		for _, v in ipairs(value) do
+			if v and not seen[v] and valid_ids[v] then
+				table.insert(result, v)
+				seen[v] = true
+			end
+		end
+	else
+		result = { value }
+	end
+	api.uci:set_list(appname, section, "urltest_node", result)
+end
 
 o = s:option(Value, _n("urltest_url"), translate("Probe URL"))
 o:depends({ [_n("protocol")] = "_urltest" })
@@ -248,6 +270,7 @@ end
 o = s:option(Value, _n("username"), translate("Username"))
 o:depends({ [_n("protocol")] = "http" })
 o:depends({ [_n("protocol")] = "socks" })
+o:depends({ [_n("protocol")] = "ssh" })
 
 o = s:option(Value, _n("password"), translate("Password"))
 o.password = true
@@ -257,6 +280,7 @@ o:depends({ [_n("protocol")] = "shadowsocks" })
 o:depends({ [_n("protocol")] = "trojan" })
 o:depends({ [_n("protocol")] = "tuic" })
 o:depends({ [_n("protocol")] = "anytls" })
+o:depends({ [_n("protocol")] = "ssh" })
 
 o = s:option(ListValue, _n("security"), translate("Encrypt Method"))
 for a, t in ipairs(security_list) do o:value(t) end
@@ -296,7 +320,6 @@ o.default = ""
 o:value("", translate("Disable"))
 o:value("xtls-rprx-vision")
 o:depends({ [_n("protocol")] = "vless", [_n("tls")] = true })
-o:depends({ [_n("protocol")] = "trojan", [_n("tls")] = true })
 
 if singbox_tags:find("with_quic") then
 	o = s:option(Value, _n("hysteria_hop"), translate("Port hopping range"))
@@ -411,6 +434,24 @@ if singbox_tags:find("with_quic") then
 	o.password = true
 	o:depends({ [_n("protocol")] = "hysteria2"})
 end
+
+-- [[ SSH config start ]] --
+o = s:option(Value, _n("ssh_priv_key"), translate("Private Key"))
+o:depends({ [_n("protocol")] = "ssh" })
+
+o = s:option(Value, _n("ssh_priv_key_pp"), translate("Private Key Passphrase"))
+o.password = true
+o:depends({ [_n("protocol")] = "ssh" })
+
+o = s:option(DynamicList, _n("ssh_host_key"), translate("Host Key"), translate("Accept any if empty."))
+o:depends({ [_n("protocol")] = "ssh" })
+
+o = s:option(DynamicList, _n("ssh_host_key_algo"), translate("Host Key Algorithms"))
+o:depends({ [_n("protocol")] = "ssh" })
+
+o = s:option(Value, _n("ssh_client_version"), translate("Client Version"), translate("Random version will be used if empty."))
+o:depends({ [_n("protocol")] = "ssh" })
+-- [[ SSH config end ]] --
 
 o = s:option(Flag, _n("tls"), translate("TLS"))
 o.default = 0
@@ -753,7 +794,7 @@ o = s:option(ListValue, _n("to_node"), translate("Landing Node"), translate("Onl
 o:depends({ [_n("chain_proxy")] = "2" })
 
 for k, v in pairs(nodes_table) do
-	if v.type == "sing-box" and v.id ~= arg[1] then
+	if v.type == "sing-box" and v.id ~= arg[1] and (not v.chain_proxy or v.chain_proxy == "") then
 		s.fields[_n("preproxy_node")]:value(v.id, v.remark)
 		s.fields[_n("to_node")]:value(v.id, v.remark)
 	end

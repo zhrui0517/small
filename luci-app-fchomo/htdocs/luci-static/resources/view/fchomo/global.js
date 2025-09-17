@@ -469,7 +469,7 @@ return view.extend({
 		so.placeholder = '7892';
 		so.rmempty = false;
 
-		// Not required for v1.19.2+
+		// @Not required for v1.19.2+
 		so = ss.option(form.Value, 'tunnel_port', _('DNS port'));
 		so.datatype = 'port';
 		so.placeholder = '7893';
@@ -491,7 +491,7 @@ return view.extend({
 		o = s.taboption('inbound', form.SectionValue, '_inbound', form.NamedSection, 'inbound', 'fchomo', _('Tun settings'));
 		ss = o.subsection;
 
-		so = ss.option(form.RichListValue || form.ListValue, 'tun_stack', _('Stack'), // less_24_10
+		so = ss.option(form.RichListValue, 'tun_stack', _('Stack'),
 			_('Tun stack.'));
 		so.value('system', _('System'), _('Less compatibility and sometimes better performance.'));
 		if (features.with_gvisor) {
@@ -500,16 +500,6 @@ return view.extend({
 		}
 		so.default = 'system';
 		so.rmempty = false;
-		if (hm.less_24_10)
-			so.onchange = function(ev, section_id, value) {
-				let desc = ev.target.nextSibling;
-				if (value === 'mixed')
-					desc.innerHTML = _('Mixed <code>system</code> TCP stack and <code>gVisor</code> UDP stack.');
-				else if (value === 'gvisor')
-					desc.innerHTML = _('Based on google/gvisor.');
-				else if (value === 'system')
-					desc.innerHTML = _('Less compatibility and sometimes better performance.');
-			}
 
 		so = ss.option(form.Value, 'tun_mtu', _('MTU'));
 		so.datatype = 'uinteger';
@@ -796,6 +786,21 @@ return view.extend({
 		so = ss.taboption('access_control', form.Flag, 'proxy_router', _('Proxy routerself'));
 		so.default = so.enabled;
 
+		so = ss.taboption('access_control', form.Flag, 'top_upstream', _('As the TOP upstream of dnsmasq'),
+			_('As the TOP upstream of dnsmasq.'));
+		so.default = so.disabled;
+		so.validate = function(section_id, value) {
+			let desc = this.getUIElement(section_id).node.nextSibling;
+			value = this.formvalue(section_id);
+
+			if (value == 1)
+				desc.innerHTML = _('As the TOP upstream of dnsmasq.');
+			else
+				desc.innerHTML = _('dnsmasq selects upstream on its own. (may affect CDN accuracy)');
+
+			return true;
+		}
+
 		/* Routing control */
 		ss.tab('routing_control', _('Routing Control'));
 
@@ -861,8 +866,8 @@ return view.extend({
 
 		so = ss.taboption('direct_list', hm.TextValue, 'direct_list.yaml', null);
 		so.rows = 20;
-		so.default = 'FQDN:\nIPCIDR:\nIPCIDR6:\n';
-		so.placeholder = "FQDN:\n- mask.icloud.com\n- mask-h2.icloud.com\n- mask.apple-dns.net\nIPCIDR:\n- '223.0.0.0/12'\nIPCIDR6:\n- '2400:3200::/32'\n";
+		so.default = 'DOMAIN:\nIPCIDR:\nIPCIDR6:\n';
+		so.placeholder = "DOMAIN:\n- mask.icloud.com\n- mask-h2.icloud.com\n- mask.apple-dns.net\nIPCIDR:\n- '223.0.0.0/12'\nIPCIDR6:\n- '2400:3200::/32'\n";
 		so.load = function(section_id) {
 			return L.resolveDefault(hm.readFile('resources', this.option), '');
 		}
@@ -879,8 +884,8 @@ return view.extend({
 
 		so = ss.taboption('proxy_list', hm.TextValue, 'proxy_list.yaml', null);
 		so.rows = 20;
-		so.default = 'FQDN:\nIPCIDR:\nIPCIDR6:\n';
-		so.placeholder = "FQDN:\n- www.google.com\nIPCIDR:\n- '91.105.192.0/23'\nIPCIDR6:\n- '2001:67c:4e8::/48'\n";
+		so.default = 'DOMAIN:\nIPCIDR:\nIPCIDR6:\n';
+		so.placeholder = "DOMAIN:\n- www.google.com\n- '.googlevideo.com'\n- google.com\nIPCIDR:\n- '91.105.192.0/23'\nIPCIDR6:\n- '2001:67c:4e8::/48'\n";
 		so.load = function(section_id) {
 			return L.resolveDefault(hm.readFile('resources', this.option), '');
 		}

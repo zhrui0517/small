@@ -12,25 +12,25 @@ PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 
 include $(INCLUDE_DIR)/package.mk
 
-GEOIP_VER:=202508140022
+GEOIP_VER:=202509050142
 GEOIP_FILE:=geoip.dat.$(GEOIP_VER)
 define Download/geoip
   URL:=https://github.com/v2fly/geoip/releases/download/$(GEOIP_VER)/
   URL_FILE:=geoip.dat
   FILE:=$(GEOIP_FILE)
-  HASH:=54761d8691a5756fdb08d2cd4d0a9c889dbaab786e1cf758592e09fb00377f53
+  HASH:=a01e09150b456cb2f3819d29d6e6c34572420aaee3ff9ef23977c4e9596c20ec
 endef
 
-GEOSITE_VER:=20250814002625
+GEOSITE_VER:=20250916122507
 GEOSITE_FILE:=dlc.dat.$(GEOSITE_VER)
 define Download/geosite
   URL:=https://github.com/v2fly/domain-list-community/releases/download/$(GEOSITE_VER)/
   URL_FILE:=dlc.dat
   FILE:=$(GEOSITE_FILE)
-  HASH:=01dae2a9c31b5c74ba7e54d8d51e0060688ed22da493eaf09f6eeeec89db395e
+  HASH:=1a7dad0ceaaf1f6d12fef585576789699bd1c6ea014c887c04b94cb9609350e9
 endef
 
-GEOSITE_IRAN_VER:=202508110046
+GEOSITE_IRAN_VER:=202509150040
 GEOSITE_IRAN_FILE:=iran.dat.$(GEOSITE_IRAN_VER)
 define Download/geosite-ir
   URL:=https://github.com/bootmortis/iran-hosted-domains/releases/download/$(GEOSITE_IRAN_VER)/
@@ -50,14 +50,16 @@ endef
 define Package/v2ray-geoip
   $(call Package/v2ray-geodata/template)
   TITLE:=GeoIP List for V2Ray
-  VERSION:=$(GEOIP_VER)-$(PKG_RELEASE)
+  PROVIDES:=v2ray-geodata xray-geodata xray-geoip
+  VERSION:=$(GEOIP_VER)-r$(PKG_RELEASE)
   LICENSE:=CC-BY-SA-4.0
 endef
 
 define Package/v2ray-geosite
   $(call Package/v2ray-geodata/template)
   TITLE:=Geosite List for V2Ray
-  VERSION:=$(GEOSITE_VER)-$(PKG_RELEASE)
+  PROVIDES:=v2ray-geodata xray-geodata xray-geosite
+  VERSION:=$(GEOSITE_VER)-r$(PKG_RELEASE)
   LICENSE:=MIT
 endef
 
@@ -65,7 +67,7 @@ define Package/v2ray-geosite-ir
   $(call Package/v2ray-geodata/template)
   TITLE:=Iran Geosite List for V2Ray
   PROVIDES:=xray-geosite-ir
-  VERSION:=$(GEOSITE_IRAN_VER)-$(PKG_RELEASE)
+  VERSION:=$(GEOSITE_IRAN_VER)-r$(PKG_RELEASE)
   LICENSE:=MIT
 endef
 
@@ -86,13 +88,15 @@ define Build/Compile
 endef
 
 define Package/v2ray-geoip/install
-	$(INSTALL_DIR) $(1)/usr/share/v2ray
+	$(INSTALL_DIR) $(1)/usr/share/v2ray $(1)/usr/share/xray
 	$(INSTALL_DATA) $(DL_DIR)/$(GEOIP_FILE) $(1)/usr/share/v2ray/geoip.dat
+	$(LN) ../v2ray/geoip.dat $(1)/usr/share/xray/geoip.dat
 endef
 
 define Package/v2ray-geosite/install
-	$(INSTALL_DIR) $(1)/usr/share/v2ray
+	$(INSTALL_DIR) $(1)/usr/share/v2ray $(1)/usr/share/xray
 	$(INSTALL_DATA) $(DL_DIR)/$(GEOSITE_FILE) $(1)/usr/share/v2ray/geosite.dat
+	$(LN) ../v2ray/geosite.dat $(1)/usr/share/xray/geosite.dat
 endef
 
 define Package/v2ray-geosite-ir/install

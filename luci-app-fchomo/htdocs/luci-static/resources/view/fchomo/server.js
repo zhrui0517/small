@@ -95,13 +95,13 @@ return view.extend({
 
 		o = s.taboption('field_general', form.Value, 'port', _('Listen port') + ' / ' + _('Ports pool'));
 		o.datatype = 'or(port, portrange)';
-		//o.placeholder = '1080,2079-2080,3080'; // Incompatible with firewall
+		//o.placeholder = '1080,2079-2080,3080'; // @fw4 does not support port lists with commas
 		o.rmempty = false;
-		//o.validate = L.bind(hm.validateCommonPort, o); // Incompatible with firewall
+		//o.validate = L.bind(hm.validateCommonPort, o); // @fw4 does not support port lists with commas
 
-		// dev: Features under development
-		// rule
-		// proxy
+		// @dev: Features under development
+		// @rule
+		// @proxy
 
 		/* HTTP / SOCKS fields */
 		/* hm.validateAuth */
@@ -261,6 +261,10 @@ return view.extend({
 		o.depends('type', 'vmess');
 		o.modalonly = true;
 
+		o = s.taboption('field_general', form.Value, 'vless_decryption', _('decryption'));
+		o.depends('type', 'vless');
+		o.modalonly = true;
+
 		/* Plugin fields */
 		o = s.taboption('field_general', form.ListValue, 'plugin', _('Plugin'));
 		o.value('', _('none'));
@@ -305,21 +309,21 @@ return view.extend({
 			let tls_reality = this.section.getUIElement(section_id, 'tls_reality').node.querySelector('input');
 
 			// Force enabled
-			if (['vless', 'trojan', 'anytls', 'tuic', 'hysteria2'].includes(type)) {
+			if (['trojan', 'anytls', 'tuic', 'hysteria2'].includes(type)) {
 				tls.checked = true;
 				tls.disabled = true;
 				if (['tuic', 'hysteria2'].includes(type) && !`${tls_alpn.getValue()}`)
 					tls_alpn.setValue('h3');
 			} else {
-				tls.disabled = null;
+				tls.removeAttribute('disabled');
 			}
 
 			// Force disabled
 			if (!['vmess', 'vless', 'trojan'].includes(type)) {
-				tls_reality.checked = null;
+				tls_reality.checked = false;
 				tls_reality.disabled = true;
 			} else {
-				tls_reality.disabled = null;
+				tls_reality.removeAttribute('disabled');
 			}
 
 			return true;

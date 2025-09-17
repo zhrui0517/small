@@ -20,8 +20,6 @@ const sharktaikogif = function() {
 'c2hhcmstdGFpa28uZ2lm'
 }()
 
-const less_24_10 = !form.RichListValue;
-
 const pr7558_merged = form.DynamicList.prototype.renderWidget.toString().match('this\.allowduplicates');
 
 const monospacefonts = [
@@ -173,11 +171,13 @@ const preset_outbound = {
 	],
 	direct: [
 		['', _('null')],
-		['DIRECT']
+		['DIRECT'],
+		['GLOBAL']
 	],
 	dns: [
 		['', 'RULES'],
-		['DIRECT']
+		['DIRECT'],
+		['GLOBAL']
 	]
 };
 
@@ -191,12 +191,13 @@ const proxy_group_type = [
 
 const routing_port_type = [
 	['all', _('All ports')],
-	['common_tcpport', _('Common ports (bypass P2P traffic)'), uci.get('fchomo', 'routing', 'common_tcpport') || '20-21,22,53,80,110,143,443,465,853,873,993,995,5222,8080,8443,9418'],
-	['common_udpport', _('Common ports (bypass P2P traffic)'), uci.get('fchomo', 'routing', 'common_udpport') || '20-21,22,53,80,110,143,443,853,993,995,8080,8443,9418'],
-	['stun_port', _('STUN ports'), uci.get('fchomo', 'routing', 'stun_port') || '3478,19302'],
-	['turn_port', _('TURN ports'), uci.get('fchomo', 'routing', 'turn_port') || '5349'],
-	['steam_client_port', _('Steam Client ports'), uci.get('fchomo', 'routing', 'steam_client_port') || '27015-27050'],
-	['steam_p2p_udpport', _('Steam P2P ports'), uci.get('fchomo', 'routing', 'steam_p2p_udpport') || '3478,4379,4380,27000-27100'],
+	['common_tcpport', _('Common ports (bypass P2P traffic)'), uci.get('fchomo', 'config', 'common_tcpport') || '20-21,22,53,80,110,143,443,465,853,873,993,995,5222,8080,8443,9418'],
+	['common_udpport', _('Common ports (bypass P2P traffic)'), uci.get('fchomo', 'config', 'common_udpport') || '20-21,22,53,80,110,143,443,853,993,995,8080,8443,9418'],
+	['stun_port', _('STUN ports'), uci.get('fchomo', 'config', 'stun_port') || '3478,19302'],
+	['turn_port', _('TURN ports'), uci.get('fchomo', 'config', 'turn_port') || '5349'],
+	['google_fcm_port', _('Google FCM ports'), uci.get('fchomo', 'config', 'google_fcm_port') || '443,5228-5230'],
+	['steam_client_port', _('Steam Client ports'), uci.get('fchomo', 'config', 'steam_client_port') || '27015-27050'],
+	['steam_p2p_udpport', _('Steam P2P ports'), uci.get('fchomo', 'config', 'steam_p2p_udpport') || '3478,4379,4380,27000-27100'],
 ];
 
 const rules_type = [
@@ -338,7 +339,7 @@ const CBIGridSection = form.GridSection.extend({
 				button.disabled = true;
 				return _('Expecting: %s').format(_('unique identifier'));
 			} else {
-				button.disabled = null;
+				button.removeAttribute('disabled');
 				return true;
 			}
 		}, 'blur', 'keyup');
@@ -353,7 +354,7 @@ const CBIGridSection = form.GridSection.extend({
 	}
 });
 
-const CBIDynamicList = form.DynamicList.extend({
+const CBIDynamicList = form.DynamicList.extend({ // @pr7558_merged
 	__name__: 'CBI.DynamicList',
 
 	renderWidget(section_id, option_index, cfgvalue) {
@@ -389,14 +390,14 @@ const CBIListValue = form.ListValue.extend({
 const CBIRichMultiValue = form.MultiValue.extend({
 	__name__: 'CBI.RichMultiValue',
 
-	value: (form.RichListValue || form.MultiValue).prototype.value // less_24_10
+	value: form.RichListValue.prototype.value
 });
 
 const CBIStaticList = form.DynamicList.extend({
 	__name__: 'CBI.StaticList',
 
 	renderWidget(/* ... */) {
-		let El = ((less_24_10 || !pr7558_merged) ? CBIDynamicList : form.DynamicList).prototype.renderWidget.apply(this, arguments);
+		let El = (!pr7558_merged ? CBIDynamicList : form.DynamicList).prototype.renderWidget.apply(this, arguments); // @pr7558_merged
 
 		El.querySelector('.add-item ul > li[data-value="-"]')?.remove();
 
@@ -457,6 +458,7 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 		this.description = description ?? '';
 		this.placeholder = '';
 		this.appendcommand = '';
+		this.overridecommand = '';
 	},
 
 	calcID(field, name) {
@@ -468,7 +470,7 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 		const field = this.section.hm_field;
 
 		let content = textarea.getValue().trim();
-		let command = `.["${field}"]` + this.appendcommand;
+		let command = this.overridecommand || `.["${field}"]` + this.appendcommand;
 		if (['proxy-providers', 'rule-providers'].includes(field))
 			content = content.replace(/(\s*payload:)/g, "$1 |-") /* payload to text */
 
@@ -573,10 +575,10 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 	}
 });
 
-const UIDynamicList = ui.DynamicList.extend({
+const UIDynamicList = ui.DynamicList.extend({ // @pr7558_merged
 	addItem(dl, value, text, flash) {
 		if (this.options.allowduplicates) {
-			const new_item = E('div', { class: flash ? 'item flash' : 'item', tabindex: 0, draggable: !less_24_10 }, [
+			const new_item = E('div', { class: flash ? 'item flash' : 'item', tabindex: 0, draggable: true }, [
 				E('span', {}, [ text ?? value ]),
 				E('input', {
 					type: 'hidden',
@@ -607,7 +609,7 @@ function bool2str(value) {
 	return value ? '1' : '0';
 }
 
-// thanks to homeproxy
+/* thanks to homeproxy */
 function calcStringMD5(e) {
 	/* Thanks to https://stackoverflow.com/a/41602636 */
 	let h = (a, b) => {
@@ -682,7 +684,7 @@ function calcStringMD5(e) {
 	return (p(a) + p(b) + p(c) + p(d)).toLowerCase();
 }
 
-// thanks to homeproxy
+/* thanks to homeproxy */
 function decodeBase64Str(str) {
 	if (!str)
 		return null;
@@ -814,7 +816,7 @@ function getClashAPI(instance) {
 	return L.resolveDefault(callGetClashAPI(instance), {});
 }
 
-// thanks to homeproxy
+/* thanks to homeproxy */
 function loadDefaultLabel(section_id) {
 	const label = uci.get(this.config, section_id, 'label');
 	if (label) {
@@ -825,7 +827,7 @@ function loadDefaultLabel(section_id) {
 	}
 }
 
-// thanks to homeproxy
+/* thanks to homeproxy */
 function loadModalTitle(title, addtitle, section_id) {
 	const label = uci.get(this.config, section_id, 'label');
 	return label ? title + ' » ' + label : addtitle;
@@ -1002,7 +1004,7 @@ function handleGenKey(option) {
 		return callMihomoGenerator(option.type, option.params).then((ret) => {
 			if (ret.result)
 				for (let key in option.result)
-					widget(option.result[key]).value = ret.result[key] || '';
+					widget(option.result[key]).value = ret.result[key] ?? '';
 			else
 				ui.addNotification(null, E('p', _('Failed to generate %s, error: %s.').format(type, ret.error)));
 		});
@@ -1100,6 +1102,28 @@ function textvalue2Value(section_id) {
 	return this.vallist[i];
 }
 
+function validatePresetIDs(disoption_list, section_id) {
+	let node;
+	let hm_prefmt = glossary[this.section.sectiontype].prefmt;
+	let preset_ids = [
+		'fchomo_direct_list',
+		'fchomo_proxy_list',
+		'fchomo_china_list',
+		'fchomo_gfw_list'
+	];
+
+	if (preset_ids.map((v) => hm_prefmt.format(v)).includes(section_id)) {
+		disoption_list.forEach(([typ, opt]) => {
+			node = this.section.getUIElement(section_id, opt)?.node;
+			(typ ? node?.querySelector(typ) : node)?.setAttribute(typ === 'textarea' ? 'readOnly' : 'disabled', '');
+		});
+
+		this.map.findElement('id', 'cbi-fchomo-' + section_id)?.lastChild.querySelector('.cbi-button-remove')?.remove();
+	}
+
+	return true;
+}
+
 function validateAuth(section_id, value) {
 	if (!value)
 		return true;
@@ -1126,7 +1150,7 @@ function validateAuthPassword(section_id, value) {
 }
 
 function validateCommonPort(section_id, value) {
-	// thanks to homeproxy
+	/* thanks to homeproxy */
 	let stubValidator = {
 		factory: validation,
 		apply(type, value, args) {
@@ -1347,7 +1371,7 @@ function removeFile(type, filename) {
 	});
 }
 
-// thanks to homeproxy
+/* thanks to homeproxy */
 function uploadCertificate(type, filename, ev) {
 	const callWriteCertificate = rpc.declare({
 		object: 'luci.fchomo',
@@ -1392,7 +1416,6 @@ return baseclass.extend({
 	rulesetdoc,
 	sharkaudio,
 	sharktaikogif,
-	less_24_10,
 	pr7558_merged,
 	monospacefonts,
 	checkurls,
@@ -1456,6 +1479,7 @@ return baseclass.extend({
 	handleReload,
 	handleRemoveIdles,
 	textvalue2Value,
+	validatePresetIDs,
 	validateAuth,
 	validateAuthUsername,
 	validateAuthPassword,

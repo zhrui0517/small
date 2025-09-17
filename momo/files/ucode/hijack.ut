@@ -252,6 +252,7 @@ table inet momo {
 	}
 	{% endif %}
 
+	{% if (tcp_mode == 'redirect'): %}
 	chain router_redirect {
 		{% for (let access_control in router_access_control): %}
 		{% if (access_control['enabled']): %}
@@ -277,7 +278,9 @@ table inet momo {
 		{% endif %}
 		{% endfor %}
 	}
+	{% endif %}
 
+	{% if (tcp_mode == 'tproxy' || udp_mode == 'tproxy'): %}
 	chain router_tproxy {
 		{% for (let access_control in router_access_control): %}
 		{% if (access_control['enabled']): %}
@@ -303,7 +306,9 @@ table inet momo {
 		{% endif %}
 		{% endfor %}
 	}
+	{% endif %}
 
+	{% if (tcp_mode == 'tun' || udp_mode == 'tun'): %}
 	chain router_tun {
 		{% for (let access_control in router_access_control): %}
 		{% if (access_control['enabled']): %}
@@ -329,6 +334,7 @@ table inet momo {
 		{% endif %}
 		{% endfor %}
 	}
+	{% endif %}
 	{% endif %}
 
 	{% if (lan_proxy): %}
@@ -358,6 +364,7 @@ table inet momo {
 	}
 	{% endif %}
 
+	{% if (tcp_mode == 'redirect'): %}
 	chain lan_redirect {
 		{% for (let access_control in lan_access_control): %}
 		{% if (access_control['enabled']): %}
@@ -381,7 +388,9 @@ table inet momo {
 		{% endif %}
 		{% endfor %}
 	}
+	{% endif %}
 
+	{% if (tcp_mode == 'tproxy' || udp_mode == 'tproxy'): %}
 	chain lan_tproxy {
 		{% for (let access_control in lan_access_control): %}
 		{% if (access_control['enabled']): %}
@@ -405,7 +414,9 @@ table inet momo {
 		{% endif %}
 		{% endfor %}
 	}
+	{% endif %}
 
+	{% if (tcp_mode == 'tun' || udp_mode == 'tun'): %}
 	chain lan_tun {
 		{% for (let access_control in lan_access_control): %}
 		{% if (access_control['enabled']): %}
@@ -430,6 +441,7 @@ table inet momo {
 		{% endfor %}
 	}
 	{% endif %}
+	{% endif %}
 
 	{% if (router_proxy): %}
 	chain nat_output {
@@ -450,19 +462,17 @@ table inet momo {
 		ip daddr @china_ip counter return
 		ip6 daddr @china_ip6 counter return
 		meta nfproto ipv4 meta l4proto . th dport != @proxy_dport {% if (fake_ip_range): %} ip daddr != {{ fake_ip_range }} {% endif %} counter return
-		meta nfproto ipv6 meta l4proto . th dport != @proxy_dport {% if (fake_ip6_range ): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
+		meta nfproto ipv6 meta l4proto . th dport != @proxy_dport {% if (fake_ip6_range): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
 		meta l4proto { tcp, udp } ip dscp @bypass_dscp {% if (fake_ip_range): %} ip daddr != {{ fake_ip_range }} {% endif %} counter return
-		meta l4proto { tcp, udp } ip6 dscp @bypass_dscp {% if (fake_ip6_range ): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
+		meta l4proto { tcp, udp } ip6 dscp @bypass_dscp {% if (fake_ip6_range): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
 		meta nfproto @proxy_nfproto jump router_redirect
 		{% endif %}
 		{% if (fake_ip_ping_hijack): %}
-		{% if (fake_ip_range ): %}
+		{% if (fake_ip_range): %}
 		icmp type echo-request ip daddr {{ fake_ip_range }} counter redirect
-
 		{% endif %}
-		{% if (fake_ip6_range ): %}
+		{% if (fake_ip6_range): %}
 		icmpv6 type echo-request ip6 daddr {{ fake_ip6_range }} counter redirect
-
 		{% endif %}
 		{% endif %}
 	}
@@ -481,9 +491,9 @@ table inet momo {
 		ip daddr @china_ip counter return
 		ip6 daddr @china_ip6 counter return
 		meta nfproto ipv4 meta l4proto . th dport != @proxy_dport {% if (fake_ip_range): %} ip daddr != {{ fake_ip_range }} {% endif %} counter return
-		meta nfproto ipv6 meta l4proto . th dport != @proxy_dport {% if (fake_ip6_range ): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
+		meta nfproto ipv6 meta l4proto . th dport != @proxy_dport {% if (fake_ip6_range): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
 		meta l4proto { tcp, udp } ip dscp @bypass_dscp {% if (fake_ip_range): %} ip daddr != {{ fake_ip_range }} {% endif %} counter return
-		meta l4proto { tcp, udp } ip6 dscp @bypass_dscp {% if (fake_ip6_range ): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
+		meta l4proto { tcp, udp } ip6 dscp @bypass_dscp {% if (fake_ip6_range): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
 		{% if (length(dns_hijack_nfproto) > 0): %}
 		meta nfproto @dns_hijack_nfproto meta l4proto { tcp, udp } th dport 53 counter return
 		{% endif %}
@@ -524,19 +534,17 @@ table inet momo {
 		ip daddr @china_ip counter return
 		ip6 daddr @china_ip6 counter return
 		meta nfproto ipv4 meta l4proto . th dport != @proxy_dport {% if (fake_ip_range): %} ip daddr != {{ fake_ip_range }} {% endif %} counter return
-		meta nfproto ipv6 meta l4proto . th dport != @proxy_dport {% if (fake_ip6_range ): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
+		meta nfproto ipv6 meta l4proto . th dport != @proxy_dport {% if (fake_ip6_range): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
 		meta l4proto { tcp, udp } ip dscp @bypass_dscp {% if (fake_ip_range): %} ip daddr != {{ fake_ip_range }} {% endif %} counter return
-		meta l4proto { tcp, udp } ip6 dscp @bypass_dscp {% if (fake_ip6_range ): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
+		meta l4proto { tcp, udp } ip6 dscp @bypass_dscp {% if (fake_ip6_range): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
 		iifname @lan_inbound_device meta nfproto @proxy_nfproto jump lan_redirect
 		{% endif %}
 		{% if (fake_ip_ping_hijack): %}
-		{% if (fake_ip_range ): %}
+		{% if (fake_ip_range): %}
 		icmp type echo-request ip daddr {{ fake_ip_range }} counter redirect
-
 		{% endif %}
-		{% if (fake_ip6_range ): %}
+		{% if (fake_ip6_range): %}
 		icmpv6 type echo-request ip6 daddr {{ fake_ip6_range }} counter redirect
-
 		{% endif %}
 		{% endif %}
 	}
@@ -550,9 +558,9 @@ table inet momo {
 		ip daddr @china_ip counter return
 		ip6 daddr @china_ip6 counter return
 		meta nfproto ipv4 meta l4proto . th dport != @proxy_dport {% if (fake_ip_range): %} ip daddr != {{ fake_ip_range }} {% endif %} counter return
-		meta nfproto ipv6 meta l4proto . th dport != @proxy_dport {% if (fake_ip6_range ): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
+		meta nfproto ipv6 meta l4proto . th dport != @proxy_dport {% if (fake_ip6_range): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
 		meta l4proto { tcp, udp } ip dscp @bypass_dscp {% if (fake_ip_range): %} ip daddr != {{ fake_ip_range }} {% endif %} counter return
-		meta l4proto { tcp, udp } ip6 dscp @bypass_dscp {% if (fake_ip6_range ): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
+		meta l4proto { tcp, udp } ip6 dscp @bypass_dscp {% if (fake_ip6_range): %} ip6 daddr != {{ fake_ip6_range }} {% endif %} counter return
 		{% if (length(dns_hijack_nfproto) > 0): %}
 		meta nfproto @dns_hijack_nfproto meta l4proto { tcp, udp } th dport 53 counter return
 		{% endif %}
