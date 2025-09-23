@@ -64,6 +64,14 @@ const dashrepos_urlparams = {
 	'metacubex/razord-meta': '?host=%s&port=%s&secret=%s'
 };
 
+const log_levels = [
+	['silent', _('Silent')],
+	['error', _('Error')],
+	['warning', _('Warning')],
+	['info', _('Info')],
+	['debug', _('Debug')]
+];
+
 const glossary = {
 	proxy_group: {
 		prefmt: 'group_%s',
@@ -377,6 +385,18 @@ const CBIDynamicList = form.DynamicList.extend({ // @pr7558_merged
 	}
 });
 
+const CBIStaticList = form.DynamicList.extend({
+	__name__: 'CBI.StaticList',
+
+	renderWidget(/* ... */) {
+		let El = (!pr7558_merged ? CBIDynamicList : form.DynamicList).prototype.renderWidget.apply(this, arguments); // @pr7558_merged
+
+		El.querySelector('.add-item ul > li[data-value="-"]')?.remove();
+
+		return El;
+	}
+});
+
 const CBIListValue = form.ListValue.extend({
 	renderWidget(/* ... */) {
 		let frameEl = form.ListValue.prototype.renderWidget.apply(this, arguments);
@@ -391,18 +411,6 @@ const CBIRichMultiValue = form.MultiValue.extend({
 	__name__: 'CBI.RichMultiValue',
 
 	value: form.RichListValue.prototype.value
-});
-
-const CBIStaticList = form.DynamicList.extend({
-	__name__: 'CBI.StaticList',
-
-	renderWidget(/* ... */) {
-		let El = (!pr7558_merged ? CBIDynamicList : form.DynamicList).prototype.renderWidget.apply(this, arguments); // @pr7558_merged
-
-		El.querySelector('.add-item ul > li[data-value="-"]')?.remove();
-
-		return El;
-	}
 });
 
 const CBITextValue = form.TextValue.extend({
@@ -970,7 +978,7 @@ function renderResDownload(section_id) {
 		E('button', {
 			class: 'cbi-button cbi-button-add',
 			disabled: (type !== 'http') || null,
-			click: ui.createHandlerFn(this, function(section_type, section_id, type, url, header) {
+			click: ui.createHandlerFn(this, (section_type, section_id, type, url, header) => {
 				if (type === 'http') {
 					return downloadFile(section_type, section_id, url, header).then((res) => {
 						ui.addNotification(null, E('p', _('Download successful.')));
@@ -1001,12 +1009,13 @@ function handleGenKey(option) {
 	});
 
 	if (typeof option === 'object') {
-		return callMihomoGenerator(option.type, option.params).then((ret) => {
-			if (ret.result)
-				for (let key in option.result)
-					widget(option.result[key]).value = ret.result[key] ?? '';
+		return callMihomoGenerator(option.type, option.params).then((res) => {
+			if (res.result)
+				option.callback.call(this, res.result).forEach(([k, v]) => {
+					widget(k).value = v ?? '';
+				});
 			else
-				ui.addNotification(null, E('p', _('Failed to generate %s, error: %s.').format(type, ret.error)));
+				ui.addNotification(null, E('p', _('Failed to generate %s, error: %s.').format(type, res.error)));
 		});
 	} else {
 		let password, required_method;
@@ -1029,7 +1038,7 @@ function handleGenKey(option) {
 				break;
 			/* DEFAULT */
 			default:
-				password = generateRand('hex', 16);
+				password = generateRand('hex', 32/2);
 				break;
 		}
 		/* AEAD */
@@ -1070,7 +1079,7 @@ function handleRemoveIdles() {
 					E('button', {
 						class: 'cbi-button cbi-button-negative important',
 						id: 'rmidles.' + filename + '.button',
-						click: ui.createHandlerFn(this, function(filename) {
+						click: ui.createHandlerFn(this, (filename) => {
 							return removeFile(section_type, filename).then((res) => {
 								let node = document.getElementById('rmidles.' + filename + '.label');
 								node.innerHTML = '<s>%s</s>'.format(node.innerHTML);
@@ -1422,6 +1431,7 @@ return baseclass.extend({
 	stunserver,
 	dashrepos,
 	dashrepos_urlparams,
+	log_levels,
 	glossary,
 	health_checkurls,
 	inbound_type,
@@ -1443,9 +1453,9 @@ return baseclass.extend({
 	/* Prototype */
 	GridSection: CBIGridSection,
 	DynamicList: CBIDynamicList,
+	StaticList: CBIStaticList,
 	ListValue: CBIListValue,
 	RichMultiValue: CBIRichMultiValue,
-	StaticList: CBIStaticList,
 	TextValue: CBITextValue,
 	GenValue: CBIGenValue,
 	GenText: CBIGenText,
