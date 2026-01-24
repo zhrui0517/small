@@ -18,7 +18,7 @@ RUN_DIR="/var/run/fchomo"
 LOG_PATH="$RUN_DIR/fchomo.log"
 
 # Compatibility
-[ -x "$(command -v apk)" ] && OPM='apk' || OPM='opkg'
+[ -x "$(command -v apk)" ] && OPM='apk' || OPM='opkg' # @less_25_12
 #
 # thanks to homeproxy
 # we don't know which is the default server, just take the first one
@@ -30,7 +30,7 @@ else
 fi
 #
 # opmc action $@
-opmc() {
+opmc() {  # @less_25_12
 	local action="$1"; shift;
 
 	if [ "$OPM" = "apk" ]; then
@@ -121,7 +121,7 @@ start_service() {
 		ucode -S "$SDL_DIR/generate_client.uc" 2>>"$LOG_PATH" | yq -Poy | yq \
 			'.sniffer["force-domain"][] style="double"
 			| .sniffer["skip-domain"][] style="double"
-			| with(.dns["nameserver-policy"] | keys; .. style="double")
+			| with(.dns["nameserver-policy"]; ... style="double")
 			| .dns["fallback-filter"].domain[] style="double"
 			| with(.["proxy-providers"][] | select(.payload); .payload style="literal")
 			| with(.["rule-providers"][] | select(.payload); .payload style="literal")' \

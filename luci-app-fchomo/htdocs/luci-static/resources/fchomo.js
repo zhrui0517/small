@@ -20,7 +20,7 @@ const sharktaikogif = function() {
 'c2hhcmstdGFpa28uZ2lm'
 }()
 
-const pr7558_merged = form.DynamicList.prototype.renderWidget.toString().match('this\.allowduplicates');
+const less_25_12 = !form.DynamicList.prototype.renderWidget.toString().match('this\.allowduplicates');
 
 const HM_DIR = "/etc/fchomo";
 
@@ -123,19 +123,19 @@ const health_checkurls = [
 ];
 
 const inbound_type = [
-	['http', _('HTTP')],
-	['socks', _('SOCKS')],
-	['mixed', _('Mixed')],
-	['shadowsocks', _('Shadowsocks')],
-	['mieru', _('Mieru')],
-	['sudoku', _('Sudoku')],
-	['vmess', _('VMess')],
-	['vless', _('VLESS')],
-	['trojan', _('Trojan')],
-	['anytls', _('AnyTLS')],
-	['tuic', _('TUIC')],
-	['hysteria2', _('Hysteria2')],
-	//['tunnel', _('Tunnel')]
+	['http', _('HTTP') + ' - ' + _('TCP')],
+	['socks', _('SOCKS') + ' - ' + _('TCP/UDP')],
+	['mixed', _('Mixed') + ' - ' + _('TCP/UDP')],
+	['shadowsocks', _('Shadowsocks') + ' - ' + _('TCP/UDP')],
+	['mieru', _('Mieru') + ' - ' + _('TCP/UDP')],
+	['sudoku', _('Sudoku') + ' - ' + _('TCP')],
+	['vmess', _('VMess') + ' - ' + _('TCP')],
+	['vless', _('VLESS') + ' - ' + _('TCP')],
+	['trojan', _('Trojan') + ' - ' + _('TCP')],
+	['anytls', _('AnyTLS') + ' - ' + _('TCP')],
+	['tuic', _('TUIC') + ' - ' + _('UDP')],
+	['hysteria2', _('Hysteria2') + ' - ' + _('UDP')],
+	//['tunnel', _('Tunnel') + ' - ' + _('TCP/UDP')]
 ];
 
 const ip_version = [
@@ -154,23 +154,23 @@ const load_balance_strategy = [
 ];
 
 const outbound_type = [
-	['direct', _('DIRECT')],
-	['http', _('HTTP')],
-	['socks5', _('SOCKS5')],
-	['ss', _('Shadowsocks')],
+	['direct', _('DIRECT') + ' - ' + _('TCP/UDP')],
+	['http', _('HTTP') + ' - ' + _('TCP')],
+	['socks5', _('SOCKS5') + ' - ' + _('TCP/UDP')],
+	['ss', _('Shadowsocks') + ' - ' + _('TCP/UDP')],
 	//['ssr', _('ShadowsocksR')], // Deprecated
-	['mieru', _('Mieru')],
-	['sudoku', _('Sudoku')],
-	['snell', _('Snell')],
-	['vmess', _('VMess')],
-	['vless', _('VLESS')],
-	['trojan', _('Trojan')],
-	['anytls', _('AnyTLS')],
-	//['hysteria', _('Hysteria')],
-	['hysteria2', _('Hysteria2')],
-	['tuic', _('TUIC')],
-	['wireguard', _('WireGuard')],
-	['ssh', _('SSH')]
+	['mieru', _('Mieru') + ' - ' + _('TCP/UDP')],
+	['sudoku', _('Sudoku') + ' - ' + _('TCP')],
+	['snell', _('Snell') + ' - ' + _('TCP')],
+	['vmess', _('VMess') + ' - ' + _('TCP')],
+	['vless', _('VLESS') + ' - ' + _('TCP')],
+	['trojan', _('Trojan') + ' - ' + _('TCP')],
+	['anytls', _('AnyTLS') + ' - ' + _('TCP')],
+	//['hysteria', _('Hysteria') + ' - ' + _('UDP')],
+	['hysteria2', _('Hysteria2') + ' - ' + _('UDP')],
+	['tuic', _('TUIC') + ' - ' + _('UDP')],
+	['wireguard', _('WireGuard') + ' - ' + _('UDP')],
+	['ssh', _('SSH') + ' - ' + _('TCP')]
 ];
 
 const preset_outbound = {
@@ -206,12 +206,12 @@ const routing_port_type = [
 	['all', _('All ports')],
 	['common_tcpport', _('Common ports (bypass P2P traffic)'), uci.get('fchomo', 'config', 'common_tcpport') || '20-21,22,53,80,110,143,443,853,873,993,995,5222,8080,8443,9418'],
 	['common_udpport', _('Common ports (bypass P2P traffic)'), uci.get('fchomo', 'config', 'common_udpport') || '20-21,22,53,80,110,143,443,853,993,995,8080,8443,9418'],
-	['smtp_tcpport', _('SMTP ports'), uci.get('fchomo', 'config', 'smtp_tcpport') || '465,587'],
-	['stun_port', _('STUN ports'), uci.get('fchomo', 'config', 'stun_port') || '3478,19302'],
-	['turn_port', _('TURN ports'), uci.get('fchomo', 'config', 'turn_port') || '5349'],
-	['google_fcm_port', _('Google FCM ports'), uci.get('fchomo', 'config', 'google_fcm_port') || '443,5228-5230'],
-	['steam_client_port', _('Steam Client ports'), uci.get('fchomo', 'config', 'steam_client_port') || '27015-27050'],
-	['steam_p2p_udpport', _('Steam P2P ports'), uci.get('fchomo', 'config', 'steam_p2p_udpport') || '3478,4379,4380,27000-27100'],
+	['smtp_tcpport', _('%s ports').format(_('SMTP')), uci.get('fchomo', 'config', 'smtp_tcpport') || '465,587'],
+	['stun_port', _('%s ports').format(_('STUN')), uci.get('fchomo', 'config', 'stun_port') || '3478,19302'],
+	['turn_port', _('%s ports').format(_('TURN')), uci.get('fchomo', 'config', 'turn_port') || '5349'],
+	['google_fcm_port', _('%s ports').format(_('Google FCM')), uci.get('fchomo', 'config', 'google_fcm_port') || '443,5228-5230'],
+	['steam_client_port', _('%s ports').format(_('Steam Client')), uci.get('fchomo', 'config', 'steam_client_port') || '27015-27050'],
+	['steam_p2p_udpport', _('%s ports').format(_('Steam P2P')), uci.get('fchomo', 'config', 'steam_p2p_udpport') || '3478,4379,4380,27000-27100'],
 ];
 
 const rules_type = [
@@ -243,8 +243,10 @@ const rules_type = [
 
 	['PROCESS-PATH'],
 	['PROCESS-PATH-REGEX'],
+	['PROCESS-PATH-WILDCARD'],
 	['PROCESS-NAME'],
 	['PROCESS-NAME-REGEX'],
+	['PROCESS-NAME-WILDCARD'],
 	['UID'],
 
 	['NETWORK'],
@@ -253,6 +255,17 @@ const rules_type = [
 	['RULE-SET'],
 
 	['MATCH']
+];
+
+const rules_type_allowparms = [
+	// params only available for types other than
+	// https://github.com/muink/mihomo/blob/300eb8b12a75504c4bd4a6037d2f6503fd3b347f/rules/parser.go#L12
+	'GEOIP',
+	'IP-ASN',
+	'IP-CIDR',
+	'IP-CIDR6',
+	'IP-SUFFIX',
+	'RULE-SET',
 ];
 
 const rules_logical_type = [
@@ -318,10 +331,11 @@ const tls_client_auth_types = [
 ];
 
 const tls_client_fingerprints = [
+	['', _('Keep default')],
 	['chrome'],
 	['firefox'],
 	['safari'],
-	['iOS'],
+	['ios'],
 	['android'],
 	['edge'],
 	['360'],
@@ -382,6 +396,8 @@ const CBIGridSection = form.GridSection.extend({
 		let el = form.GridSection.prototype.renderSectionAdd.call(this, extra_class),
 			nameEl = el.querySelector('.cbi-section-create-name');
 
+		nameEl.placeholder = _('Specify a ID');
+
 		ui.addValidator(nameEl, 'uciname', true, (v) => {
 			let button = el.querySelector('.cbi-section-create > .cbi-button-add');
 
@@ -413,7 +429,7 @@ const CBIGridSection = form.GridSection.extend({
 	}
 });
 
-const CBIDynamicList = form.DynamicList.extend({ // @pr7558_merged
+const CBIDynamicList = form.DynamicList.extend({ // @less_25_12
 	__name__: 'CBI.DynamicList',
 
 	renderWidget(section_id, option_index, cfgvalue) {
@@ -440,7 +456,7 @@ const CBIStaticList = form.DynamicList.extend({
 	__name__: 'CBI.StaticList',
 
 	renderWidget(/* ... */) {
-		let El = (!pr7558_merged ? CBIDynamicList : form.DynamicList).prototype.renderWidget.apply(this, arguments); // @pr7558_merged
+		let El = (less_25_12 ? CBIDynamicList : form.DynamicList).prototype.renderWidget.apply(this, arguments); // @less_25_12
 
 		El.querySelector('.add-item ul > li[data-value="-"]')?.remove();
 
@@ -515,6 +531,80 @@ const CBIGenText = CBITextValue.extend({
 	}
 });
 
+const CBICopyValue = form.Value.extend({
+	__name__: 'CBI.CopyValue',
+
+	readonly: true,
+
+	renderWidget(section_id, option_index, cfgvalue) {
+		let node = form.Value.prototype.renderWidget.call(this, section_id, option_index, cfgvalue);
+
+		node.classList.add('control-group');
+
+		node.appendChild(E('button', {
+			class: 'cbi-button cbi-button-add',
+			click: ui.createHandlerFn(this, async (section_id) => {
+				try {
+					await navigator.clipboard.writeText(this.formvalue(section_id));
+					console.log('Content copied to clipboard!');
+				} catch (e) {
+					console.error('Failed to copy: ', e);
+				}
+				/* Deprecated
+				let inputEl = document.getElementById(this.cbid(section_id)).querySelector('input');
+				inputEl.select();
+				document.execCommand("copy");
+				inputEl.blur();
+				*/
+				return alert(_('Content copied to clipboard!'));
+			}, section_id)
+		}, [ _('Copy') ]));
+
+		return node;
+	}
+});
+
+const CBIparseYaml = baseclass.extend(/** @lends hm.parseYaml.prototype */ {
+	__init__(field, name, cfg) {
+		if (isEmpty(cfg))
+			return null;
+
+		if (typeof cfg === 'object') {
+			this.id = this.calcID(field, name ?? cfg.name);
+			this.label = '%s %s'.format(name ?? cfg.name, _('(Imported)'));
+		} else {
+			this.id = this.calcID(field, name ?? cfg);
+			this.label = '%s %s'.format(name ?? cfg, _('(Imported)'));
+		}
+
+		this.field = field;
+		this.name = name;
+		this.cfg = this.key_mapping(cfg);
+	},
+
+	key_mapping(cfg) {
+		return cfg;
+	},
+
+	calcID(field, name) {
+		return calcStringMD5(String.format('%s:%s', field, name));
+	},
+
+	bool2str(value) {
+		if (typeof value !== 'boolean')
+			return null;
+		return value ? '1' : '0';
+	},
+
+	jq(obj, path) {
+		return path.split('.').reduce((acc, cur) => acc && acc[cur], obj);
+	},
+
+	output() {
+		return this.cfg;
+	}
+});
+
 const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */ {
 	__init__(map, section, title, description) {
 		this.map = map;
@@ -524,10 +614,6 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 		this.placeholder = '';
 		this.appendcommand = '';
 		this.overridecommand = '';
-	},
-
-	calcID(field, name) {
-		return calcStringMD5(String.format('%s:%s', field, name));
 	},
 
 	handleFn(textarea) {
@@ -547,7 +633,7 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 			if (!isEmpty(res) && typeof res === 'object') {
 				if (Array.isArray(res))
 					res.forEach((cfg) => {
-						let config = this.parseYaml(field, null, cfg);
+						let config = new this.parseYaml(field, null, cfg).output();
 						//console.info(JSON.stringify(config, null, 2));
 						if (config) {
 							this.write(config);
@@ -556,7 +642,7 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 					})
 				else
 					for (let name in res) {
-						let config = this.parseYaml(field, name, res[name]);
+						let config = new this.parseYaml(field, name, res[name]).output();
 						//console.info(JSON.stringify(config, null, 2));
 						if (config) {
 							this.write(config);
@@ -575,7 +661,7 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 						E('br'),
 						//type_file_count ? _("%s rule-set of type '%s' need to be filled in manually.")
 						//	.format(type_file_count, 'file') : ''
-					]));
+					]), 'info');
 			}
 
 			if (imported_count)
@@ -585,17 +671,7 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 		});
 	},
 
-	parseYaml(field, name, cfg) {
-		if (isEmpty(cfg))
-			return null;
-
-		if (typeof cfg === 'object') {
-			cfg.hm_id = this.calcID(field, name ?? cfg.name);
-			cfg.hm_label = '%s %s'.format(name ?? cfg.name, _('(Imported)'));
-		}
-
-		return cfg;
-	},
+	parseYaml: CBIparseYaml,
 
 	render() {
 		const textarea = new ui.Textarea('', {
@@ -640,7 +716,7 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 	}
 });
 
-const UIDynamicList = ui.DynamicList.extend({ // @pr7558_merged
+const UIDynamicList = ui.DynamicList.extend({ // @less_25_12
 	addItem(dl, value, text, flash) {
 		if (this.options.allowduplicates) {
 			const new_item = E('div', { class: flash ? 'item flash' : 'item', tabindex: 0, draggable: true }, [
@@ -668,12 +744,6 @@ const UIDynamicList = ui.DynamicList.extend({ // @pr7558_merged
 });
 
 /* Method */
-function bool2str(value) {
-	if (typeof value !== 'boolean')
-		return null;
-	return value ? '1' : '0';
-}
-
 /* thanks to homeproxy */
 function calcStringMD5(e) {
 	/* Thanks to https://stackoverflow.com/a/41602636 */
@@ -816,8 +886,26 @@ function generateRand(type, length) {
 	};
 }
 
-function getValue(obj, path) {
-	return path.split('.').reduce((acc, cur) => acc && acc[cur], obj);
+function shuffle(StrORArr) {
+	let arr;
+
+	if (typeof StrORArr === 'string')
+		arr = StrORArr.split('');
+	else if (Array.isArray(StrORArr))
+		arr = StrORArr;
+	else
+		throw new Error(`String or Array only`);
+
+    for (let i = arr.length - 1; i > 0; i--) {         // Traverse the array from back to front
+        const j = Math.floor(Math.random() * (i + 1)); // Generate a random index between 0 and i
+
+        [arr[i], arr[j]] = [arr[j], arr[i]];           // Swap positions
+    }
+
+	if (typeof StrORArr === 'string')
+		return arr.join('');
+	else if (Array.isArray(StrORArr))
+		return arr;
 }
 
 function json2yaml(object, command) {
@@ -1075,12 +1163,12 @@ function renderResDownload(section_id) {
 			click: ui.createHandlerFn(this, (section_type, section_id, type, url, header) => {
 				if (type === 'http') {
 					return downloadFile(section_type, section_id, url, header).then((res) => {
-						ui.addNotification(null, E('p', _('Download successful.')));
+						ui.addNotification(null, E('p', _('Download successful.')), 'info');
 					}).catch((e) => {
-						ui.addNotification(null, E('p', _('Download failed: %s').format(e)));
+						ui.addNotification(null, E('p', _('Download failed: %s').format(e)), 'error');
 					});
 				} else
-					return ui.addNotification(null, E('p', _('Unable to download unsupported type: %s').format(type)));
+					return ui.addNotification(null, E('p', _('Unable to download unsupported type: %s').format(type)), 'error');
 			}, section_type, section_id, type, url, header)
 		}, [ _('🡇') ]) //🗘
 	]);
@@ -1109,13 +1197,15 @@ function handleGenKey(option) {
 					widget(k).value = v ?? '';
 				});
 			else
-				ui.addNotification(null, E('p', _('Failed to generate %s, error: %s.').format(type, res.error)));
+				ui.addNotification(null, E('p', _('Failed to generate %s, error: %s.').format(type, res.error)), 'error');
 		});
 	} else {
 		let password, required_method;
 
 		if (option === 'uuid' || option.match(/_uuid/))
 			required_method = 'uuid';
+		else if (option.match(/sudoku_custom_table/))
+			required_method = 'sudoku_custom_table';
 		else if (type === 'shadowsocks' && option === 'shadowsocks_password')
 			required_method = this.section.getOption('shadowsocks_chipher')?.formvalue(section_id);
 		else if (type === 'trojan' && option === 'trojan_ss_password')
@@ -1129,6 +1219,10 @@ function handleGenKey(option) {
 			/* UUID */
 			case 'uuid':
 				password = generateRand('uuid');
+				break;
+			/* SUDOKU CUSTOM TABLE */
+			case 'sudoku_custom_table':
+				password = shuffle('xxppvvvv');
 				break;
 			/* DEFAULT */
 			default:
@@ -1150,7 +1244,7 @@ function handleReload(instance, ev, section_id) {
 	return fs.exec('/etc/init.d/fchomo', ['reload', instance])
 		.then((res) => { /* return window.location = window.location.href.split('#')[0] */ })
 		.catch((e) => {
-			ui.addNotification(null, E('p', _('Failed to execute "/etc/init.d/fchomo %s %s" reason: %s').format('reload', instance, e)))
+			ui.addNotification(null, E('p', _('Failed to execute "/etc/init.d/fchomo %s %s" reason: %s').format('reload', instance, e)), 'error')
 		})
 }
 
@@ -1388,6 +1482,22 @@ function validateShadowsocksPassword(encmode, section_id, value) {
 	return true;
 }
 
+function validateSudokuCustomTable(section_id, value) {
+	if (!value)
+		return true;
+
+	if (value.length !== 8)
+		return _('Expecting: %s').format(_('valid format: 2x, 2p, 4v'));
+
+	const counts = {};
+    for (const c of value)
+        counts[c] = (counts[c] || 0) + 1;
+    if (!(counts.x === 2 && counts.p === 2 && counts.v === 4))
+		return _('Expecting: %s').format(_('valid format: 2x, 2p, 4v'));
+
+	return true;
+}
+
 function validateUniqueValue(section_id, value) {
 	if (!value)
 		return _('Expecting: %s').format(_('non-empty value'));
@@ -1497,12 +1607,12 @@ function uploadCertificate(type, filename, ev) {
 	.then(L.bind((btn, res) => {
 		return L.resolveDefault(callWriteCertificate(filename), {}).then((ret) => {
 			if (ret.result === true)
-				ui.addNotification(null, E('p', _('Your %s was successfully uploaded. Size: %sB.').format(type, res.size)));
+				ui.addNotification(null, E('p', _('Your %s was successfully uploaded. Size: %sB.').format(type, res.size)), 'info');
 			else
-				ui.addNotification(null, E('p', _('Failed to upload %s, error: %s.').format(type, ret.error)));
+				ui.addNotification(null, E('p', _('Failed to upload %s, error: %s.').format(type, ret.error)), 'error');
 		});
 	}, this, ev.target))
-	.catch((e) => { ui.addNotification(null, E('p', e.message)) });
+	.catch((e) => { ui.addNotification(null, E('p', e.message), 'error') });
 }
 function uploadInitialPack(ev, section_id) {
 	const callWriteInitialPack = rpc.declare({
@@ -1515,13 +1625,13 @@ function uploadInitialPack(ev, section_id) {
 	.then(L.bind((btn, res) => {
 		return L.resolveDefault(callWriteInitialPack(), {}).then((ret) => {
 			if (ret.result === true) {
-				ui.addNotification(null, E('p', _('Successfully uploaded.')));
+				ui.addNotification(null, E('p', _('Successfully uploaded.')), 'info');
 				return window.location = window.location.href.split('#')[0];
 			} else
-				ui.addNotification(null, E('p', _('Failed to upload, error: %s.').format(ret.error)));
+				ui.addNotification(null, E('p', _('Failed to upload, error: %s.').format(ret.error)), 'error');
 		});
 	}, this, ev.target))
-	.catch((e) => { ui.addNotification(null, E('p', e.message)) });
+	.catch((e) => { ui.addNotification(null, E('p', e.message), 'error') });
 }
 
 return baseclass.extend({
@@ -1529,7 +1639,7 @@ return baseclass.extend({
 	rulesetdoc,
 	sharkaudio,
 	sharktaikogif,
-	pr7558_merged,
+	less_25_12,
 	HM_DIR,
 	monospacefonts,
 	checkurls,
@@ -1547,6 +1657,7 @@ return baseclass.extend({
 	proxy_group_type,
 	routing_port_type,
 	rules_type,
+	rules_type_allowparms,
 	rules_logical_type,
 	rules_logical_payload_count,
 	aead_cipher_length,
@@ -1568,17 +1679,18 @@ return baseclass.extend({
 	TextValue: CBITextValue,
 	GenValue: CBIGenValue,
 	GenText: CBIGenText,
+	CopyValue: CBICopyValue,
+	parseYaml: CBIparseYaml,
 	HandleImport: CBIHandleImport,
 
 	/* Method */
-	bool2str,
 	calcStringMD5,
 	decodeBase64Str,
 	encodeBase64Str,
 	decodeBase64Bin,
 	encodeBase64Bin,
 	generateRand,
-	getValue,
+	shuffle,
 	json2yaml,
 	yaml2json,
 	isEmpty,
@@ -1619,6 +1731,7 @@ return baseclass.extend({
 	validateMTLSClientAuth,
 	validatePresetIDs,
 	validateShadowsocksPassword,
+	validateSudokuCustomTable,
 	validateUniqueValue,
 	// file operations
 	lsDir,

@@ -6,29 +6,32 @@
 
 'require fchomo as hm';
 
-function parseRulesetYaml(field, name, cfg) {
-	if (!cfg.type)
-		return null;
+const parseRulesetYaml = hm.parseYaml.extend({
+	key_mapping(cfg) {
+		if (!cfg.type)
+			return null;
 
-	// key mapping
-	let config = hm.removeBlankAttrs({
-		id: cfg.hm_id,
-		label: cfg.hm_label,
-		type: cfg.type,
-		format: cfg.format,
-		behavior: cfg.behavior,
-		...(cfg.type === 'inline' ? {
-			payload: cfg.payload, // string: array
-		} : {
-			url: cfg.url,
-			size_limit: cfg["size-limit"],
-			interval: cfg.interval,
-			proxy: cfg.proxy ? hm.preset_outbound.full.map(([key, label]) => key).includes(cfg.proxy) ? cfg.proxy : this.calcID(hm.glossary["proxy_group"].field, cfg.proxy) : null,
-		})
-	});
+		// key mapping // 2026/01/17
+		let config = hm.removeBlankAttrs({
+			id: this.id,
+			label: this.label,
+			type: cfg.type,
+			format: cfg.format,
+			behavior: cfg.behavior,
+			...(cfg.type === 'inline' ? {
+				payload: cfg.payload, // string: array
+			} : {
+				url: cfg.url,
+				size_limit: cfg["size-limit"],
+				interval: cfg.interval,
+				proxy: cfg.proxy ? hm.preset_outbound.full.map(([key, label]) => key).includes(cfg.proxy) ? cfg.proxy : this.calcID(hm.glossary["proxy_group"].field, cfg.proxy) : null,
+				header: cfg.header ? JSON.stringify(cfg.header, null, 2) : null, // string: object
+			})
+		});
 
-	return config;
-}
+		return config;
+	}
+});
 
 function parseRulesetLink(section_type, uri) {
 	const filefmt = new RegExp(/^(text|yaml|mrs)$/);
@@ -160,6 +163,13 @@ return view.extend({
 							'    url: "https://raw.githubusercontent.com/../Google.yaml"\n' +
 							'    proxy: proxy\n' +
 							'    behavior: classical\n' +
+							'    header:\n' +
+							'      User-Agent:\n' +
+							'      - "mihomo/1.18.3"\n' +
+							'      Accept:\n' +
+							"      - 'application/vnd.github.v3.raw'\n" +
+							'      Authorization:\n' +
+							"      - 'token 1231231'\n" +
 							'  rule4:\n' +
 							'    type: inline\n' +
 							'    behavior: domain\n' +
@@ -168,11 +178,7 @@ return view.extend({
 							"      - '*.*.microsoft.com'\n" +
 							"      - 'books.itunes.apple.com'\n" +
 							'  ...'
-			o.parseYaml = function(field, name, cfg) {
-				let config = hm.HandleImport.prototype.parseYaml.call(this, field, name, cfg);
-
-				return config ? parseRulesetYaml.call(this, field, name, config) : null;
-			};
+			o.parseYaml = parseRulesetYaml;
 
 			return o.render();
 		}
@@ -207,7 +213,7 @@ return view.extend({
 						ui.addNotification(null, E('p', _('No valid rule-set link found.')));
 					else
 						ui.addNotification(null, E('p', _('Successfully imported %s %s of total %s.')
-							.format(imported_count, _('rule-set'), input_links.length)));
+							.format(imported_count, _('rule-set'), input_links.length)), 'info');
 				}
 
 				if (imported_count)
@@ -325,12 +331,24 @@ return view.extend({
 				.format('https://wiki.metacubex.one/config/rule-providers/content/', _('Contents')));
 		o.placeholder = _('Content will not be verified, Please make sure you enter it correctly.');
 		o.load = function(section_id) {
-			return L.resolveDefault(hm.readFile(this.section.sectiontype, section_id), '');
+			const option = uci.get(data[0], section_id, 'type');
+
+			if (option === 'file')
+				return L.resolveDefault(hm.readFile(this.section.sectiontype, section_id), '');
 		}
-		o.write = L.bind(hm.writeFile, o, o.section.sectiontype);
-		o.remove = L.bind(hm.writeFile, o, o.section.sectiontype);
-		o.rmempty = false;
-		o.retain = true;
+		o.write = function(section_id, formvalue) {
+			const option = uci.get(data[0], section_id, 'type');
+
+			if (option === 'file')
+				return hm.writeFile.call(this, this.section.sectiontype, section_id, formvalue);
+		}
+		o.remove = function(section_id) {
+			const option = uci.get(data[0], section_id, 'type');
+			const cached_option = this.section.getOption('type').cfgvalue(section_id);
+
+			if (option === 'file' && cached_option === 'file')
+				return hm.writeFile.call(this, this.section.sectiontype, section_id);
+		}
 		o.depends({'type': 'file', 'format': /^(text|yaml)$/});
 		o.modalonly = true;
 
@@ -370,6 +388,13 @@ return view.extend({
 		o.textvalue = hm.textvalue2Value;
 		//o.editable = true;
 		o.depends('type', 'http');
+
+		o = s.option(hm.TextValue, 'header', _('HTTP header'),
+			_('Custom HTTP header.'));
+		o.placeholder = '{\n  "User-Agent": [\n    "mihomo/1.18.3"\n  ],\n  "Accept": [\n    //"application/vnd.github.v3.raw"\n  ],\n  "Authorization": [\n    //"token 1231231"\n  ]\n}';
+		o.validate = hm.validateJson;
+		o.depends('type', 'http');
+		o.modalonly = true;
 
 		o = s.option(form.DummyValue, '_update');
 		o.cfgvalue = hm.renderResDownload;

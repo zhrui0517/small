@@ -44,7 +44,7 @@ const methods = {
 		args: { type: 'type', params: 'params' },
 		call: function(req) {
 			/* https://github.com/MetaCubeX/mihomo/blob/Alpha/component/generator/cmd.go */
-			if (!(req.args?.type in ['uuid', 'reality-keypair', 'wg-keypair', 'ech-keypair', 'vless-mlkem768', 'vless-x25519']))
+			if (!(req.args?.type in ['uuid', 'reality-keypair', 'wg-keypair', 'ech-keypair', 'vless-mlkem768', 'vless-x25519', 'sudoku-keypair']))
 				return { result: false, error: 'illegal type' };
 
 			const type = req.args?.type;
@@ -55,7 +55,7 @@ const methods = {
 				for (let line = fd.read('line'); length(line); line = fd.read('line')) {
 					if (type === 'uuid')
 						result.uuid = trim(line);
-					else if (type in ['reality-keypair', 'wg-keypair']) {
+					else if (type in ['reality-keypair', 'wg-keypair', 'sudoku-keypair']) {
 						let priv = match(trim(line), /PrivateKey: (.*)/);
 						if (priv)
 							result.private_key = priv[1];
@@ -100,7 +100,7 @@ const methods = {
 		call: function() {
 			let features = {};
 
-			const use_apk = system('command -v apk') == 0 || null;
+			const use_apk = system('command -v apk') == 0 || null; // @less_25_12
 
 			const fd = popen('/usr/bin/mihomo -v');
 			if (fd) {
@@ -117,10 +117,10 @@ const methods = {
 				fd.close();
 			}
 
-			features.app_version = trim(popen(`${use_apk ? 'apk list -I' : 'opkg list-installed'} luci-app-fchomo | ` +
-				`awk '{print $${use_apk ? '1' : 'NF'}}'`).read('all')) || null;
+			features.app_version = trim(popen(`${use_apk ? 'apk list -I --manifest' : 'opkg list-installed'} luci-app-fchomo | ` +
+				`awk '{print $NF}'`).read('all')) || null; // @less_25_12
 
-			features.has_dnsmasq_full = system(`[ -n "$(${use_apk ? 'apk list -qI' : 'opkg list-installed'} dnsmasq-full)" ]`) == 0 || null;
+			features.has_dnsmasq_full = system(`[ -n "$(${use_apk ? 'apk list -qI' : 'opkg list-installed'} dnsmasq-full)" ]`) == 0 || null; // @less_25_12
 			features.has_ip_full = access('/usr/libexec/ip-full');
 			features.has_stunclient = access('/usr/bin/stunclient');
 			features.has_tcp_brutal = hasKernelModule('brutal.ko');

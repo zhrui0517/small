@@ -255,7 +255,6 @@ config["geo-auto-update"] = false;
 
 /* TLS START */
 /* TLS settings */
-config["global-client-fingerprint"] = uci.get(uciconf, ucitls, 'global_client_fingerprint');
 config.tls = {
 	"certificate": uci.get(uciconf, ucitls, 'tls_cert_path'),
 	"private-key": uci.get(uciconf, ucitls, 'tls_key_path'),
@@ -519,11 +518,18 @@ uci.foreach(uciconf, ucinode, (cfg) => {
 
 		/* Sudoku */
 		key: cfg.sudoku_key,
-		"aead-method": cfg.sudoku_aead_method,
+		"aead-method": replace(cfg.sudoku_aead_method || '', 'chacha20-ietf-poly1305', 'chacha20-poly1305') || null,
 		"padding-min": strToInt(cfg.sudoku_padding_min),
 		"padding-max": strToInt(cfg.sudoku_padding_max),
 		"table-type": cfg.sudoku_table_type,
+		"custom-tables": cfg.sudoku_custom_tables,
+		"enable-pure-downlink": (cfg.sudoku_enable_pure_downlink === '0') ? false : null,
 		"http-mask": (cfg.sudoku_http_mask === '0') ? false : true,
+		"http-mask-mode": cfg.sudoku_http_mask_mode,
+		"http-mask-tls": strToBool(cfg.sudoku_http_mask_tls),
+		"http-mask-host": cfg.sudoku_http_mask_host,
+		"path-root": cfg.sudoku_path_root,
+		"http-mask-multiplex": cfg.sudoku_http_mask_multiplex,
 
 		/* Snell */
 		psk: cfg.snell_psk,
@@ -573,6 +579,7 @@ uci.foreach(uciconf, ucinode, (cfg) => {
 		"pre-shared-key": cfg.wireguard_pre_shared_key,
 		"allowed-ips": cfg.wireguard_allowed_ips,
 		reserved: cfg.wireguard_reserved,
+		"persistent-keepalive": strToInt(cfg.wireguard_persistent_keepalive),
 		mtu: strToInt(cfg.wireguard_mtu) || null,
 		"remote-dns-resolve": strToBool(cfg.wireguard_remote_dns_resolve),
 		dns: cfg.wireguard_dns,
@@ -605,7 +612,8 @@ uci.foreach(uciconf, ucinode, (cfg) => {
 		"client-fingerprint": cfg.tls_client_fingerprint,
 		"ech-opts": cfg.tls_ech === '1' ? {
 			enable: true,
-			config: cfg.tls_ech_config
+			config: cfg.tls_ech_config,
+			"query-server-name": cfg.tls_ech_query_server_name
 		} : null,
 		"reality-opts": cfg.tls_reality === '1' ? {
 			"public-key": cfg.tls_reality_public_key,
@@ -627,7 +635,8 @@ uci.foreach(uciconf, ucinode, (cfg) => {
 				path: cfg.transport_path || '/',
 			} : null,
 			"grpc-opts": cfg.transport_type === 'grpc' ? {
-				"grpc-service-name": cfg.transport_grpc_servicename
+				"grpc-service-name": cfg.transport_grpc_servicename,
+				"grpc-user-agent": cfg.transport_grpc_user_agent
 			} : null,
 			"ws-opts": cfg.transport_type === 'ws' ? {
 				path: cfg.transport_path || '/',
@@ -773,7 +782,8 @@ uci.foreach(uciconf, ucirule, (cfg) => {
 			url: cfg.url,
 			"size-limit": bytesizeToByte(cfg.size_limit) || null,
 			interval: (cfg.type === 'http') ? durationToSecond(cfg.interval) ?? 259200 : null,
-			proxy: get_proxygroup(cfg.proxy)
+			proxy: get_proxygroup(cfg.proxy),
+			header: cfg.header ? json(cfg.header) : null
 		})
 	};
 });

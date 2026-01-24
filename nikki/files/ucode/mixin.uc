@@ -25,7 +25,6 @@ config['tcp-concurrent'] = uci_bool(uci.get('nikki', 'mixin', 'tcp_concurrent'))
 config['disable-keep-alive'] = uci_bool(uci.get('nikki', 'mixin', 'disable_tcp_keep_alive'));
 config['keep-alive-idle'] = uci_int(uci.get('nikki', 'mixin', 'tcp_keep_alive_idle'));
 config['keep-alive-interval'] = uci_int(uci.get('nikki', 'mixin', 'tcp_keep_alive_interval'));
-config['global-client-fingerprint'] = uci.get('nikki', 'mixin', 'global_client_fingerprint');
 
 config['external-ui'] = uci.get('nikki', 'mixin', 'ui_path');
 config['external-ui-name'] = uci.get('nikki', 'mixin', 'ui_name');
@@ -68,11 +67,13 @@ if (uci_bool(uci.get('nikki', 'proxy', 'enabled'))) {
 
 config['dns'] = {};
 config['dns']['enable'] = uci_bool(uci.get('nikki', 'mixin', 'dns_enabled'));
+config['dns']['cache-algorithm'] = uci.get('nikki', 'mixin', 'dns_cache_algorithm');
 config['dns']['listen'] = uci.get('nikki', 'mixin', 'dns_listen');
 config['dns']['ipv6'] = uci_bool(uci.get('nikki', 'mixin', 'dns_ipv6'));
 config['dns']['enhanced-mode'] = uci.get('nikki', 'mixin', 'dns_mode');
 config['dns']['fake-ip-range'] = uci.get('nikki', 'mixin', 'fake_ip_range');
 config['dns']['fake-ip-range6'] = uci.get('nikki', 'mixin', 'fake_ip6_range');
+config['dns']['fake-ip-ttl'] = uci_int(uci.get('nikki', 'mixin', 'fake_ip_ttl'));
 if (uci_bool(uci.get('nikki', 'mixin', 'fake_ip_filter'))) {
 	config['dns']['fake-ip-filter'] = uci_array(uci.get('nikki', 'mixin', 'fake_ip_filters'));
 }
@@ -80,6 +81,7 @@ config['dns']['fake-ip-filter-mode'] = uci.get('nikki', 'mixin', 'fake_ip_filter
 
 config['dns']['respect-rules'] = uci_bool(uci.get('nikki', 'mixin', 'dns_respect_rules'));
 config['dns']['prefer-h3'] = uci_bool(uci.get('nikki', 'mixin', 'dns_doh_prefer_http3'));
+config['dns']['direct-nameserver-follow-policy'] = uci_bool(uci.get('nikki', 'mixin', 'dns_direct_nameserver_follow_policy'));
 config['dns']['use-system-hosts'] = uci_bool(uci.get('nikki', 'mixin', 'dns_system_hosts'));
 config['dns']['use-hosts'] = uci_bool(uci.get('nikki', 'mixin', 'dns_hosts'));
 if (uci_bool(uci.get('nikki', 'mixin', 'hosts'))) {
